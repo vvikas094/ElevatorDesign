@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,7 +12,6 @@ namespace InterviewApp
 {
     public class ElevatorControlSystem : ElevatorControlSystemFactory
     {
-        public static int MAX_ELEVATORS = 16;
         int numberOfElevators = 0;
         int numberOfFloors = 0;
         List<Elevator> elevators;
@@ -19,7 +19,7 @@ namespace InterviewApp
         public ElevatorControlSystem(int numberOfElevators, int numberOfFloors)
         {
             if (numberOfElevators < 0) throw new Exception("Elevator number must be positive");
-            this.numberOfElevators = (numberOfElevators > MAX_ELEVATORS) ? MAX_ELEVATORS : numberOfElevators;
+            this.numberOfElevators = numberOfElevators;
             this.numberOfFloors = numberOfFloors;
             InitializeElevators();
         }
@@ -38,9 +38,9 @@ namespace InterviewApp
             return elevators;
         }       
         
-        public void processDestination(int elevatorId, int destinationFloor, string strFloorNum, ElevatorDirection requestDirection)
+        public void processDestination(int elevatorId, int destinationFloor, string strFloorDisplay, ElevatorDirection requestDirection)
         {
-            elevators.Find(i => i.id == elevatorId).addNewDestination(destinationFloor, strFloorNum, requestDirection);
+            elevators.Find(i => i.id == elevatorId).addNewDestination(destinationFloor, strFloorDisplay, requestDirection);
         }
 
         public void processRequest(int floorNum, string floorDisplay, ElevatorDirection requestDirection)
@@ -51,25 +51,47 @@ namespace InterviewApp
 
             foreach (Elevator e in elevators)
             {
-                if(floorNum == e.getCurrentFloor())
+                if(e.getStatus() == ElevatorStatus.READY)
                 {
-                    e.openDoors();
-                    return;
-                }
-                else
-                {
-                    if(requestDirection == e.getDirection())
+                    if (floorNum == e.getCurrentFloor())
                     {
-                        processListTowards.Add(e.id, Math.Abs(e.getCurrentFloor() - floorNum));
+                        e.openDoors();
+                        return;
                     }
                     else
                     {
-                        processListOpp.Add(e.id, Math.Abs(e.getCurrentFloor() - floorNum));
+                        if (requestDirection == e.getDirection())
+                        {
+                            processListTowards.Add(e.id, Math.Abs(e.getCurrentFloor() - floorNum));
+                        }
+                        else
+                        {
+                            processListOpp.Add(e.id, Math.Abs(e.getCurrentFloor() - floorNum));
+                        }
                     }
-                }
+                }                
             }
+            if(processListTowards.Count > 0)
+            {
+                int id = processListTowards.OrderByDescending(i => i.Value).First().Key;
+                processDestination(id, floorNum, floorDisplay, requestDirection);
+            }
+            else
+            {
+                int id = processListOpp.OrderByDescending(i => i.Value).First().Key;
+                processDestination(id, floorNum, floorDisplay, requestDirection);
+            }            
+        }
 
-
+        public void processAlarm(int elevatorId)
+        {
+            MailMessage msg = new MailMessage();
+            msg.To.Add("to@test.com");
+            msg.From = new MailAddress("from@test.com");
+            msg.Subject = "Alert!! Pressed on elevator: " + elevatorId;
+            msg.Body = "Emergency button is clicked on elevator: " + elevatorId;
+            SmtpClient smtp = new SmtpClient("localhost");
+            smtp.Send(msg);
         }
     }
 }
