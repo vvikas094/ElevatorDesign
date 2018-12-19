@@ -9,7 +9,7 @@ namespace InterviewApp.Interfaces
 {
     public interface ElevatorControlSystemFactory
     {
-        void processRequest(int floorNum, string floorDisplay, ElevatorDirection requestDirection);
+        void processFloorRequest(int floorNum, string floorDisplay, ElevatorDirection requestDirection);
 
         void processDestination(int elevatorId, int destinationFloor, string strFloorNum, ElevatorDirection requestDirection);
     }

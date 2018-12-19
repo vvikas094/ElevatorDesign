@@ -29,7 +29,8 @@ namespace InterviewApp
             elevators = new List<Elevator>();
             for (int idx = 0; idx < this.numberOfElevators; idx++)
             {
-                elevators.Add(new Elevator(idx,1));
+                Elevator e = new Elevator(idx, 1);
+                elevators.Add(e);                
             }
         }
 
@@ -43,7 +44,7 @@ namespace InterviewApp
             elevators.Find(i => i.id == elevatorId).addNewDestination(destinationFloor, strFloorDisplay, requestDirection);
         }
 
-        public void processRequest(int floorNum, string floorDisplay, ElevatorDirection requestDirection)
+        public void processFloorRequest(int floorNum, string floorDisplay, ElevatorDirection requestDirection)
         {
 
             SortedList<int, int> processListTowards = new SortedList<int, int>();
@@ -56,6 +57,11 @@ namespace InterviewApp
                     if (floorNum == e.getCurrentFloor())
                     {
                         e.openDoors();
+                        return;
+                    }
+                    else if(e.getDirection() == ElevatorDirection.ELEVATOR_HOLD)
+                    {
+                        e.addNewDestination(floorNum, floorDisplay, requestDirection);
                         return;
                     }
                     else

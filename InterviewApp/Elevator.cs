@@ -40,6 +40,11 @@ namespace InterviewApp
 
         public void addNewDestination(int destination, string displayValue, ElevatorDirection direction)
         {
+            if(destination == currentFloor)
+            {
+                openDoors();
+                return;
+            }
             if(direction == ElevatorDirection.ELEVATOR_UP)
             {
                 upDest.Add(destination, displayValue);
@@ -48,10 +53,7 @@ namespace InterviewApp
             {
                 downDest.Add(destination, displayValue);
             }
-            else
-            {
-                //OpenDoors
-            }
+            getNextDestination();           
         }
         public ElevatorDirection getDirection()
         {        
@@ -71,11 +73,31 @@ namespace InterviewApp
         public void openDoors()
         {
             //open doors
+            System.Threading.Thread.Sleep(10);
+            closeDoors();
         }
 
         public void closeDoors()
         {
             //close doors
+            // Check for no obstacles.
+            getNextDestination();
+        }
+
+        public void processElevatorButtonRequest(int destination, string strDisplayValue)
+        {
+            if(currentStatus == ElevatorStatus.READY)
+            {
+                if (destination == currentFloor)
+                {
+                    openDoors();
+                    return;
+                }                    
+                if (destination > currentFloor)
+                    addNewDestination(destination, strDisplayValue, ElevatorDirection.ELEVATOR_UP);
+                else
+                    addNewDestination(destination, strDisplayValue, ElevatorDirection.ELEVATOR_DOWN);
+            }
         }
 
         public KeyValuePair<int,string> getNextDestination()
